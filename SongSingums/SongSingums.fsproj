@@ -49,12 +49,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Util.fs" />
+    <Compile Include="Singer.fs" />
     <Compile Include="Freq.fs" />
     <Compile Include="Waves.fs" />
     <Compile Include="Audio.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
-    <Compile Include="Singer.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
