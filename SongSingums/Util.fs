@@ -30,6 +30,13 @@ type Fraction (n : int, d : int) =
     member this.ToFloat () =
         (float num / float den)
 
+    override this.Equals value =
+        match value with
+        | :? Fraction as f2 -> num * f2.Den = f2.Num * den
+        | _ -> false
+
+    override this.GetHashCode () = hash (num / den)
+
     static member (+) (f1 : Fraction, f2 : Fraction) =
         let num = f1.Num * f2.Den + f2.Num * f1.Den
         let den = f1.Den * f2.Den
@@ -103,6 +110,11 @@ type Fraction (n : int, d : int) =
         Fraction (num / factor, den / factor)
 
     interface IComparable with
+        member this.CompareTo value =
+            match value with
+            | :? Fraction as f2 -> 
+                num * f2.Den - f2.Num * den
+            | _ -> invalidArg "can't compare two objects of a different type" "can't do it"
 /// sample rate in samples per second
 let n = 44100
 /// amplitude multiplier
