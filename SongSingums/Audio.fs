@@ -19,7 +19,17 @@ let tempo = 15.0
 
 /// Returns an amplitude array to be made into a buffer
 let measureToArray (input : NoteNode) =
-    
+    let rec listBuild (chils : NoteNode[]) (recRat : Ratio) (left : Loc) (right : Loc) =
+        [|
+            if Array.isEmpty chils then
+                yield (recRat, left)
+            else
+                for i = 0 to chils.Length - 1 do
+                    let newLeft = (right - left) * chils.[i].Location
+                    let newRight = if i < chils.Length - 1 then chils.[i + 1].Location else right
+                    yield! listBuild chils.[i].Children (chils.[i].Ratio * recRat) newLeft newRight
+        |]
+    listBuild input.Children input.Ratio input.Location (Fraction 1)
 
 /// generates a song until its time is complete
 let gen () =
@@ -32,7 +42,7 @@ let gen () =
 
     let melBuffers = AL.GenBuffers (5)
     let melSource = AL.GenSource ()
-    AL.SourceQueueBuffers (melSource, buffers.Length, buffers)
+    AL.SourceQueueBuffers (melSource, melBuffers.Length, melBuffers)
     
     let startTime = System.DateTime.Now
 
