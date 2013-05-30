@@ -3,22 +3,25 @@ open System
 
 
 /// highest common factor
-let rec hcf a b =
+let rec hcf aS bS =
+  let a = abs aS
+  let b = abs bS
   if a = 0 then b
   elif a < b then hcf a (b - a)
   else hcf (a - b) b
 
 type Fraction (n : int, d : int) =
-    let mutable num = 0
-    let mutable den = 0
+    let mutable num = n
+    let mutable den = d
 
     do
-        let factor = hcf n d
-        num <- n / factor
-        den <- d / factor
+        let factor = hcf num den
+        num <- num / factor
+        den <- den / factor
 
     new (n : int) =
         Fraction (n, 1)
+
     member this.Num
         with get () = num
         and set (value) = num <- value
@@ -29,6 +32,9 @@ type Fraction (n : int, d : int) =
 
     member this.ToFloat () =
         (float num / float den)
+
+    override this.ToString () =
+        num.ToString () + "/" + den.ToString ()
 
     override this.Equals value =
         match value with
@@ -116,13 +122,11 @@ type Fraction (n : int, d : int) =
                 num * f2.Den - f2.Num * den
             | _ -> invalidArg "can't compare two objects of a different type" "can't do it"
 /// sample rate in samples per second
-let n = 44100
+let sample = 44100
 /// amplitude multiplier
-let multiplier = 0.07
+let multiplier = 0.14
 /// random number generator
 let r = new System.Random ()
-/// Singer level of precision, powers of ten, with every power being one decimal point of precision
-let prec = int (10.0 ** 2.0)
 /// Erraticity, higher is more erratic, 0 < H < 1 must be true
 let H = Fraction (75, 100)
 

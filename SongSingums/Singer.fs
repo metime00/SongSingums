@@ -31,9 +31,9 @@ type NoteNode (r : Ratio, l : Loc) =
 
 type Singer () =
 
-    let ratioGen maxRatio maxQuo =
+    let ratioGen maxRatio (maxQuo : Fraction) =
         let num = r.Next (1, maxRatio + 1)
-        let den = r.Next (max 1 (int (ceil (float num / maxQuo))), min (maxRatio + 1) (int (float num * maxQuo)))
+        let den = r.Next (max 1 ((int) (ceil ((num / maxQuo).ToFloat ()))), min (maxRatio + 1) ((int) ((num * maxQuo).ToFloat ())))
         Fraction (num, den)
         
     /// generates a time signature
@@ -49,15 +49,14 @@ type Singer () =
                 /// middle shifted so that left is zero
                 let mid = (left + right) * (Fraction (1, 2)) - left
                 /// displacement of the middle
-                let disp = (Fraction (r.Next (int (mid.Num * 2 * prec)), mid.Den) / prec - mid) * H
+                let disp = (Fraction (r.Next (mid.Num * 2), mid.Den) - mid) * H
                 /// the shifted true middle
                 let newMid = mid + left + disp
-                // booleans to check if the left or right midpoints will go
+                // booleans to check if the left or right midpoints will go, cutoff should be 4.0
                 if level < 4.0 then
                     if r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) && right - left > interval then yield! gen left newMid (level + 1.0)
                     if r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) then yield newMid
                     if r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) && right - left > interval then yield! gen newMid right (level + 1.0)
-
             ]
         Fraction (0) :: gen (Fraction 0) (Fraction 1) 1.0
 
@@ -68,10 +67,10 @@ type Singer () =
 
     /// returns the initial children for a NoteNode based on the time signature
     let nodeInit time =
-        ///largest number allowed in the numerator or denominator
+        ///largest number allowed in the numerator or denominator, should be 6
         let maxRatio = 6
         ///how many times greater a part of the ratio can be than the other part
-        let maxQuo = 2.0
+        let maxQuo = Fraction (2, 1)
         [|
             for i in time do
                 yield NoteNode (ratioGen maxRatio maxQuo, i)
@@ -82,7 +81,7 @@ type Singer () =
         /// largest number allowed in the numerator or denominator
         let maxRatio = 6
         /// how many times greater a part of the ratio can be than the other part
-        let maxQuo = 1.5
+        let maxQuo = Fraction (3, 2)
         /// whether or not the subdivision is a triplet
         let triple = r.Next 101 > 75
 
@@ -94,6 +93,7 @@ type Singer () =
         else //two unequally spaced notes
             /// numerator can only be up to one less this number, with denominator only up to two more
             [
+                ///the number that decides how large a number in the numerator or denominator can be
                 let range = 6
                 let numL = r.Next (1, range) //range is one less so the note location is never 1.0
                 let denL = r.Next (int numL + 1, range + 2)
@@ -101,7 +101,7 @@ type Singer () =
                 yield NoteNode (ratioGen maxRatio maxQuo, Fraction (numL, denL))
             ]
 
-    let melody = NoteNode (Fraction (1, 1), Fraction (0))
+    let melody = NoteNode (Fraction (1), Fraction (0))
     let rhythm = NoteNode (Fraction (1, 2), Fraction (0))
 
     member this.NextMeasure () =
@@ -110,7 +110,7 @@ type Singer () =
         melody.AddChildren (nodeInit time)
         rhythm.AddChildren (nodeInit time)
 
-        [
+        [|
             yield melody
             yield rhythm
-        ]
+        |]

@@ -5,12 +5,19 @@ open Waves
 open System
 open Freq
 
-while true do
-    let q = Singer ()
-    let mes = (q.NextMeasure ()).Head
-    let fucks = measureToArray mes
-    for i in fucks do
-        printfn "(%f * %f)" (fst i) (snd i)
-    printfn "break"
 
-    Console.ReadKey (true) |> ignore
+gen ()
+
+Console.ReadKey true |> ignore
+
+//while true do
+//    let q = Singer ()
+//    let mes = (q.NextMeasure ()).[0]
+//    let fucks = measureToArray mes
+//    for i in fucks do
+//        printfn "(%s * %s)" ((fst i).ToString ()) ((snd i).ToString ())
+//    printfn "break"
+//
+//    Console.ReadKey (true) |> ignore
+
+//6205459

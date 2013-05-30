@@ -68,7 +68,7 @@ let triangleWave (f : Sound [], n : int, duration : float) =
     buffer
 
 /// adds two waves together, so that they can be used in one buffer.
-let waveConcat (first : uint8[], second : uint8[]) =
+let waveConcat (first : uint8[]) (second : uint8[]) =
     [|
         yield! first
         yield! second
