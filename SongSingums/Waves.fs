@@ -73,3 +73,12 @@ let waveConcat (first : uint8[]) (second : uint8[]) =
         yield! first
         yield! second
     |]
+
+/// Adds a variable number of waves together, to combine parallel voices. The subsequent amplitude array is the length of the longest constituent array
+let waveAdd (parts : uint8[][]) =
+    [|
+        //the length of the array to be returned
+        let maxLen = Array.maxBy (fun t -> Array.length t) parts |> Array.length
+        for i = 0 to maxLen - 1 do
+            yield Array.filter (fun x -> i < Array.length x) parts |> Array.fold (fun (acc : uint8) next -> acc + next.[i]) (uint8 1)
+    |]      

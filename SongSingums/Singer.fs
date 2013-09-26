@@ -31,6 +31,10 @@ type NoteNode (r : Ratio, l : Loc) =
 
 type Singer () =
 
+    /// Erraticity, higher is more erratic, 0 < H < 1 must be true
+    let H = Fraction (75, 100)
+
+    ///creates a ratio from a maximum number that can be used either in the numerator or denominator and a maximum total value of the fraction
     let ratioGen maxRatio (maxQuo : Fraction) =
         let num = r.Next (1, maxRatio + 1)
         let den = r.Next (max 1 ((int) (ceil ((num / maxQuo).ToFloat ()))), min (maxRatio + 1) ((int) ((num * maxQuo).ToFloat ())))
@@ -57,15 +61,21 @@ type Singer () =
                     if r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) && right - left > interval then yield! gen left newMid (level + 1.0)
                     if r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) then yield newMid
                     if r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) && right - left > interval then yield! gen newMid right (level + 1.0)
+//                    elif r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) && right - left > interval then //three evenly spaced triplet notes
+//                        let shiftR = right - left
+//                        for i = 1 to 2 do
+//                            yield (i * shiftR / 3) + left
+//                    elif r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) then yield newMid //triplets creates a situation where the time signature can become very empty
+                        
             ]
-        Fraction (0) :: gen (Fraction 0) (Fraction 1) 1.0
+        Fraction 0 :: gen (Fraction 0) (Fraction 1) 1.0
 
     /// time signature, expressed as a list of note subdivisions
-    let time : Fraction list = timeGen ()
+    let timeSig : Fraction list = timeGen ()
     /// motifs are song snippets expressed as arrays of notes
     let mutable motifs : NoteNode list = List.empty
 
-    /// returns the initial children for a NoteNode based on the time signature
+    /// returns the initial children for a NoteNode based on the time signature, and their frequency ratios
     let nodeInit time =
         ///largest number allowed in the numerator or denominator, should be 6
         let maxRatio = 6
@@ -100,15 +110,16 @@ type Singer () =
                 yield NoteNode (ratioGen maxRatio maxQuo, Fraction (0))
                 yield NoteNode (ratioGen maxRatio maxQuo, Fraction (numL, denL))
             ]
-
+    //the main voice of the song
     let melody = NoteNode (Fraction (1), Fraction (0))
+    //rhythm exists two octaves down from the melody
     let rhythm = NoteNode (Fraction (1, 2), Fraction (0))
 
     member this.NextMeasure () =
         melody.RemoveChildren ()
         rhythm.RemoveChildren ()
-        melody.AddChildren (nodeInit time)
-        rhythm.AddChildren (nodeInit time)
+        melody.AddChildren (nodeInit timeSig)
+        rhythm.AddChildren (nodeInit timeSig)
 
         [|
             yield melody

@@ -124,11 +124,9 @@ type Fraction (n : int, d : int) =
 /// sample rate in samples per second
 let sample = 44100
 /// amplitude multiplier
-let multiplier = 0.14
+let multiplier = 0.10
 /// random number generator
 let r = new System.Random ()
-/// Erraticity, higher is more erratic, 0 < H < 1 must be true
-let H = Fraction (75, 100)
 
 type Sound =
     /// frequency of note
