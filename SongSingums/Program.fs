@@ -4,7 +4,7 @@
 //3. Make generator that generates a melody and bass voice, uses overtones and different waves, and has song progression over the course of the song
 //4. Audio's main purpose will be continuous streaming
 open Audio
-open Singer
+open SingerAbstract
 open Waves
 open System
 open Freq

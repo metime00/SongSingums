@@ -1,49 +1,21 @@
-﻿module Singer
+﻿module Singers
 open Util
-        
+open SingerAbstract
+open Waves
 
-/// ratio of note to base note represented as a fraction
-type Ratio = Fraction
-/// location of a note's subdivision by fraction of the parent node's time
-type Loc = Fraction
-
-/// node in a tree of notes or beats
-type NoteNode (r : Ratio, l : Loc) =
-    let mutable ratio : Ratio = r
-    let loc : Loc = l
-    let mutable children : NoteNode[] = Array.empty
-
-    member this.Ratio = ratio
-
-    member this.Location = loc
-
-    /// returns a list of the notes children
-    member this.Children = children
-
-    member this.AddChildren (input : NoteNode[]) =
-        children <- input
-
-    member this.RemoveChildren () =
-        children <- Array.empty
-
-    member this.SetRatio input =
-        ratio <- input
-
-type Singer () =
-
-    /// Erraticity, higher is more erratic, 0 < H < 1 must be true
-    let H = Fraction (75, 100)
+type BasicSinger (tem, err) =
+    inherit Singer(tem, err)
 
     ///creates a ratio from a maximum number that can be used either in the numerator or denominator and a maximum total value of the fraction
     let ratioGen maxRatio (maxQuo : Fraction) =
         let num = r.Next (1, maxRatio + 1)
         let den = r.Next (max 1 ((int) (ceil ((num / maxQuo).ToFloat ()))), min (maxRatio + 1) ((int) ((num * maxQuo).ToFloat ())))
-        Fraction (num, den)
+        Ratio (num, den)
         
     /// generates a time signature
     let timeGen () =
         /// creates a list of the locations of beats
-        let rec gen (left : Fraction) (right : Fraction) level =
+        let rec gen (left : Loc) (right : Loc) level =
             [
                 /// doesn't let a middle displace this close to another point
                 //let spacer = Fraction (9, 100) //unimplemented
@@ -53,7 +25,7 @@ type Singer () =
                 /// middle shifted so that left is zero
                 let mid = (left + right) * (Fraction (1, 2)) - left
                 /// displacement of the middle
-                let disp = (Fraction (r.Next (mid.Num * 2), mid.Den) - mid) * H
+                let disp = (Fraction (r.Next (mid.Num * 2), mid.Den) - mid) * this.H
                 /// the shifted true middle
                 let newMid = mid + left + disp
                 // booleans to check if the left or right midpoints will go, cutoff should be 4.0
@@ -68,7 +40,7 @@ type Singer () =
 //                    elif r.NextDouble () < (H.ToFloat ()) ** (level / 2.0) then yield newMid //triplets creates a situation where the time signature can become very empty
                         
             ]
-        Fraction 0 :: gen (Fraction 0) (Fraction 1) 1.0
+        Loc 0 :: gen (Loc 0) (Loc 1) 1.0
 
     /// time signature, expressed as a list of note subdivisions
     let timeSig : Fraction list = timeGen ()
@@ -112,16 +84,28 @@ type Singer () =
             ]
     //the main voice of the song
     let melody = NoteNode (Fraction (1), Fraction (0))
-    //rhythm exists two octaves down from the melody
-    let rhythm = NoteNode (Fraction (1, 2), Fraction (0))
 
-    member this.NextMeasure () =
+    let nextMeasure () =
         melody.RemoveChildren ()
-        rhythm.RemoveChildren ()
         melody.AddChildren (nodeInit timeSig)
-        rhythm.AddChildren (nodeInit timeSig)
 
         [|
             yield melody
-            yield rhythm
         |]
+
+    /// Converts an array of amplitudes and locations to a buffer
+    let bufferMake (input : (Ratio * Loc)[]) (init : float) =
+        //makes the measure length by dividing seconds per minute by measures per minute
+        let mesLen = 60.0 / tempo
+        let mutable output = null
+        for i = 0 to input.Length - 1 do
+            let dur = 
+                let tmp =
+                    if i <> input.Length - 1 then snd input.[i + 1] - snd input.[i]
+                    else 1 - snd input.[i] //think of a more elegant solution to this
+                tmp.ToFloat () * mesLen
+            let freq = Sound.Note (init * ((fst input.[i]).ToFloat ()))
+            let curWave = sinWave ([| freq |], sample, dur)
+            if output = null then output <- curWave
+            else output <- waveConcat output curWave
+        output

@@ -49,9 +49,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Util.fs" />
-    <Compile Include="Singer.fs" />
+    <Compile Include="SingerAbstract.fs" />
     <Compile Include="Freq.fs" />
     <Compile Include="Waves.fs" />
+    <Compile Include="Singers.fs" />
     <Compile Include="Audio.fs" />
     <Compile Include="Program.fs" />
     <None Include="App.config" />
