@@ -33,7 +33,7 @@ type BasicSinger (tem, err) =
     /// generates a subdivision of a melody, returning two or three NoteNodes
     override this.MelGen () =
         /// largest number allowed in the numerator or denominator, lower numbers create less dissonant intervals
-        let maxRatio = 5
+        let maxRatio = 6
         /// how much larger a ratio can be compared to its parent ratio
         let maxQuo = Fraction (3, 2)
         /// whether or not the subdivision is a triplet, 25% chance to be a triplet
@@ -48,7 +48,7 @@ type BasicSinger (tem, err) =
             /// numerator can only be up to one less this number, with denominator only up to two more
             [|
                 ///the number that decides how large a number in the numerator or denominator can be for location
-                let range = 3
+                let range = 4
                 let numL = r.Next (1, range) //range is one less so the note location is never 1.0
                 let denL = r.Next (int numL + 1, range + 2)
                 yield NoteNode (this.RatioGen maxRatio maxQuo, Loc (0))
@@ -61,9 +61,8 @@ type BasicSinger (tem, err) =
         melody.RemoveChildren ()
         let melTemp = this.NodeInit this.TimeSig
         if iterMes < 3 then 
-            melTemp.[0].AddChildren (this.MelGen ())
-            if iterMes = 2 && melTemp.Length > 1 then
-                //melTemp.[1].AddChildren (this.MelGen ())
+            for i in melTemp do
+                i.AddChildren (this.MelGen ())
             iterMes <- iterMes + 1
         else
             iterMes <- 0
@@ -83,12 +82,9 @@ type BasicSinger (tem, err) =
                 let tmp =
                     if i <> input.Length - 1 then snd input.[i + 1] - snd input.[i]
                     else 1 - snd input.[i] //think of a more elegant solution to this
-                //debugging
-                if tmp.ToFloat () < 0.0 then
-                    printfn "aw shit dawg u negative"
                 tmp.ToFloat () * mesLen
             let freq = Sound.Note (init * ((fst input.[i]).ToFloat ()))
-            let curWave = sinWave ([| freq |], sample, dur)
+            let curWave = squareWave ([| freq;|], sample, dur)
             if output = null then output <- curWave
             else output <- waveConcat output curWave
         output

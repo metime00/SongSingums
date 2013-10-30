@@ -30,14 +30,15 @@ type NoteNode (r : Ratio, l : Loc) =
         ratio <- input
 
 /// Takes a NoteNode and returns the corresponding array of note ratios and locations to be made into a buffer
-let measureToArray (input : NoteNode) =
+
+let measureToArray (input : NoteNode) = 
     let rec listBuild (chils : NoteNode[]) (recRat : Ratio) (left : Loc) (right : Loc) =
         [|
             if Array.isEmpty chils then
                 yield (recRat, left)
             else
                 for i = 0 to chils.Length - 1 do
-                    let newLeft = (right - left) * chils.[i].Location
+                    let newLeft = (right - left) * chils.[i].Location + left
                     let newRight = if i < chils.Length - 1 then chils.[i + 1].Location else right
                     yield! listBuild chils.[i].Children (chils.[i].Ratio * recRat) newLeft newRight
         |]

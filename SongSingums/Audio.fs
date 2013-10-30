@@ -4,8 +4,8 @@ open System
 open OpenTK.Audio
 open OpenTK.Audio.OpenAL
 open System.Numerics
-open Freq
-open Waves
+open SingerAbstract
+open Singers
 open Util
 //http://www.opentk.com/book/export/html/145
 //http://upload.wikimedia.org/wikipedia/commons/a/a0/Equal_Temper_w_limits.svg
@@ -20,27 +20,22 @@ let gen () =
     ///the base note of the song
     let initial = float (r.Next (300, 801)) + r.NextDouble ()
     printfn "%f" initial
+    let H = Fraction (60, 100)
+    let tempo = 20.0
 
-    let singer = Singer ()
+    let singer = BasicSinger (tempo, H)
 
     let melody () = 
         let fucks = (singer.NextMeasure ()).[0] |> measureToArray
         for i in fucks do
             printfn "melody: (%s * %s)" ((fst i).ToString ()) ((snd i).ToString ())
         printfn "break"
-        bufferMake (fucks) initial
+        singer.BufferMake (fucks) initial
 
-    let bass () = 
-        let fucks = (singer.NextMeasure ()).[1] |> measureToArray
-        for i in fucks do
-            printfn "bass: (%s * %s)" ((fst i).ToString ()) ((snd i).ToString ())
-        printfn "break"
-        bufferMake (fucks) initial
-
-    let melBuffers = AL.GenBuffers (25)
+    let melBuffers = AL.GenBuffers (50)
     let melSource = AL.GenSource ()
     for i = 0 to melBuffers.Length - 1 do
-        let mel = waveAdd [| melody (); Array.map (fun x -> x / (uint8 2)) (bass ()); |]
+        let mel = melody ()
         AL.BufferData (melBuffers.[i], OpenAL.ALFormat.Mono8, mel, mel.Length, sample)
 
     AL.SourceQueueBuffers (melSource, melBuffers.Length, melBuffers)
