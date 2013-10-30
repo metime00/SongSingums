@@ -37,7 +37,7 @@ type BasicSinger (tem, err) =
         /// how much larger a ratio can be compared to its parent ratio
         let maxQuo = Fraction (3, 2)
         /// whether or not the subdivision is a triplet, 25% chance to be a triplet
-        let triple = r.Next 101 > 75
+        let triple = r.Next 101 > 101
 
         if triple then //three equal spaced children notes
             [|
@@ -62,7 +62,9 @@ type BasicSinger (tem, err) =
         let melTemp = this.NodeInit this.TimeSig
         if iterMes < 3 then 
             for i in melTemp do
-                i.AddChildren (this.MelGen ())
+                let tempChils = this.MelGen ()
+                i.AddChildren (tempChils)
+            melTemp.[0].Children.[0].AddChildren (this.MelGen ())
             iterMes <- iterMes + 1
         else
             iterMes <- 0
@@ -81,7 +83,7 @@ type BasicSinger (tem, err) =
             let dur = 
                 let tmp =
                     if i <> input.Length - 1 then snd input.[i + 1] - snd input.[i]
-                    else 1 - snd input.[i] //think of a more elegant solution to this
+                    else 1 - snd input.[i] //think of a more elegant solution to this 
                 tmp.ToFloat () * mesLen
             let freq = Sound.Note (init * ((fst input.[i]).ToFloat ()))
             let curWave = squareWave ([| freq;|], sample, dur)

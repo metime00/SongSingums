@@ -39,7 +39,7 @@ let measureToArray (input : NoteNode) =
             else
                 for i = 0 to chils.Length - 1 do
                     let newLeft = (right - left) * chils.[i].Location + left
-                    let newRight = if i < chils.Length - 1 then chils.[i + 1].Location else right
+                    let newRight = if i < chils.Length - 1 then (right - left) * chils.[i + 1].Location + left else right
                     yield! listBuild chils.[i].Children (chils.[i].Ratio * recRat) newLeft newRight
         |]
     listBuild input.Children input.Ratio input.Location (Fraction 1)

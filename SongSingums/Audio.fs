@@ -32,7 +32,7 @@ let gen () =
         printfn "break"
         singer.BufferMake (fucks) initial
 
-    let melBuffers = AL.GenBuffers (50)
+    let melBuffers = AL.GenBuffers (20)
     let melSource = AL.GenSource ()
     for i = 0 to melBuffers.Length - 1 do
         let mel = melody ()
