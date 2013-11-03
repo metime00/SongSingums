@@ -128,7 +128,4 @@ let multiplier = 0.10
 /// random number generator
 let r = new System.Random ()
 
-type Sound =
-    /// frequency of note
-    | Note of float
-    | Rest
+type Note = float

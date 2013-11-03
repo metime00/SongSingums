@@ -40,7 +40,7 @@ let measureToArray (input : NoteNode) =
                 for i = 0 to chils.Length - 1 do
                     let newLeft = (right - left) * chils.[i].Location + left
                     let newRight = if i < chils.Length - 1 then (right - left) * chils.[i + 1].Location + left else right
-                    yield! listBuild chils.[i].Children (chils.[i].Ratio * recRat) newLeft newRight
+                    yield! listBuild chils.[i].Children (chils.[i].Ratio) newLeft newRight //ratios are absolute
         |]
     listBuild input.Children input.Ratio input.Location (Fraction 1)
 
@@ -90,7 +90,7 @@ type Singer (tem : float, err : Fraction) =
         let num = r.Next (1, maxRatio + 1)
         let den = r.Next (max 1 ((int) (ceil ((num / maxQuo).ToFloat ()))), min (maxRatio + 1) ((int) ((num * maxQuo).ToFloat ())))
         Ratio (num, den)
-        
+
     /// the time signature of the singer, can be generated or defined by the programmer
     abstract member TimeSig: Loc list
 

@@ -26,11 +26,20 @@ let gen () =
     let singer = BasicSinger (tempo, H)
 
     let melody () = 
-        let fucks = (singer.NextMeasure ()).[0] |> measureToArray
-        for i in fucks do
+        let oh = singer.NextMeasure ()
+        let mel = oh.[0] |> measureToArray
+        let bass = oh.[1] |> measureToArray
+        for i in mel do
             printfn "melody: (%s * %s)" ((fst i).ToString ()) ((snd i).ToString ())
+        printfn ""
+        for i in bass do
+            printfn "bass: (%s * %s)" ((fst i).ToString ()) ((snd i).ToString ())
         printfn "break"
-        singer.BufferMake (fucks) initial
+
+        let bassTmp = singer.BufferMake (bass) initial
+        for i = 0 to bassTmp.Length - 1 do
+            bassTmp.[i] <- (bassTmp.[i] * (uint8 1)) / (uint8 2)
+        Waves.waveAdd [|singer.BufferMake (mel) initial; bassTmp|]
 
     let melBuffers = AL.GenBuffers (20)
     let melSource = AL.GenSource ()
